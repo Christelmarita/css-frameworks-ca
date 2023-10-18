@@ -47,7 +47,9 @@
 }
 
 #editModal button:hover {
-    background-color: #0056b3;
+    background-color: transparent;
+    border: 1px solid #514965;
+    color: #514965;
 }
 
 #closeModal {

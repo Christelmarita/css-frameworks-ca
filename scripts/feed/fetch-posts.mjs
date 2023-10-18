@@ -1,5 +1,6 @@
 import { API_ALL_POSTS } from "../common/constant.mjs";
 import { openEditModal } from "./edit-post.mjs";
+import { confirmDelete } from "./delete-post.mjs";
 
 const postContainer = document.querySelector("#post-container");
 const searchInput = document.getElementById("search");
@@ -87,13 +88,18 @@ function createPostHTML(post) {
     cardBody.appendChild(cardText);
 
     const editButton = document.createElement("button");
-    editButton.classList.add("btn", "btn-outline-secondary", "btn-block");
-    editButton.innerHTML = 'Edit Post';
+    editButton.classList.add("btn", "btn-outline-secondary", "btn-block", "my-2", "mr-2");
+    editButton.innerHTML = 'Edit';
     editButton.addEventListener("click", () => openEditModal(post));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.classList.add("btn", "btn-outline-danger", "btn-block", "m-2");
+    deleteButton.innerHTML = 'Delete';
+    deleteButton.addEventListener("click", () => confirmDelete(post));
 
     if (media) {
         const imageContainer = document.createElement("div");
-        imageContainer.classList.add("text-center", "post-image-container");
+        imageContainer.classList.add("text-center", "post-image-container", "my-2");
         imageContainer.style.height = "400px";
 
         const imageElement = document.createElement("img");
@@ -107,6 +113,7 @@ function createPostHTML(post) {
     }
 
     cardBody.appendChild(editButton);
+    cardBody.appendChild(deleteButton);
     card.appendChild(cardBody);
     
 
@@ -131,17 +138,17 @@ async function filterPosts() {
     const filterOldest = document.getElementById("oldest");
 
     filterNewest.addEventListener("click", (e) => {
-        const postsAsc = data.sort(
+        const postsAscending = data.sort(
             (a, b) => new Date(b.created) - new Date(a.created)
         );
-        displayPosts(postsAsc);
+        displayPosts(postsAscending);
     });
 
     filterOldest.addEventListener("click", (e) => {
-        const postsDesc = data.sort(
+        const postsDescending = data.sort(
             (a, b) => new Date(a.created) - new Date(b.created)
         );
-        displayPosts(postsDesc);
+        displayPosts(postsDescending);
     });
 }
 

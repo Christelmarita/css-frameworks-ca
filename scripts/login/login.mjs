@@ -16,9 +16,7 @@ async function loginUser(url, userData) {
         const accessToken = json.accessToken;
         localStorage.setItem('accessToken', accessToken);
 
-        // Check if login was successful and access token is present
         if (accessToken) {
-          // Redirect to the feed page upon successful login
           window.location.href = '../../feed/index.html';
         }
     } catch (error) {

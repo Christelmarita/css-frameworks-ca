@@ -13,7 +13,6 @@ async function registerUser(url, userData) {
       const response = await fetch(url, postData);
   
       if (response.ok) {
-        // Registration was successful, navigate to the login page
         window.location.href = 'index.html';
       } else {
         const errorData = await response.json();

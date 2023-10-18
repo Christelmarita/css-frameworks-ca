@@ -26,7 +26,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item active">
-                        <a class="nav-link pe-3 py-3" href="../profile/index.html">Profile</a>
+                        <a class="nav-link pe-3 py-3" href="../profile">Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link pe-3 py-3 active" href="#">Feed</a>
@@ -77,9 +77,18 @@
                 <button id="viewMoreButton" class="btn btn-primary my-3">View More</button>
             </div>
         </div>
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <p id="modalAuthor"></p>
+                <p id="modalBody"></p>
+                <img id="modalMedia" src="" alt="Post Media">
+            </div>
+        </div>      
         <div id="modal-overlay" class="modal-overlay"></div>
         <div id="editModal" class="modal">
-            <div class="modal-content">
+            <div class="edit-modal-content">
                 <span class="close" id="closeModal">&times;</span>
                 <h2>Edit Post</h2>
                 <form id="editForm">

@@ -5,10 +5,21 @@ import { confirmDelete } from "./delete-post.mjs";
 const postContainer = document.querySelector("#post-container");
 const searchInput = document.getElementById("search");
 const searchButton = document.getElementById("search-button");
+const postModal = document.getElementById("postModal");
+const modalAuthor = document.getElementById("modalAuthor");
+const modalBody = document.getElementById("modalBody");
+const modalMedia = document.getElementById("modalMedia");
+const closeModalButton = document.getElementById("closeModal");
 
 let data = [];
 
-export async function getPosts(url) {
+/**
+ * 
+ * @param {string} url - Fetches list of posts
+ * @returns {Promise<object[]>} - Promise results in array of posts if successfully fetched
+ * @example
+ * //Example
+ * export async function getPosts(url) {
     try {
         const token = localStorage.getItem('accessToken');
 
@@ -31,7 +42,39 @@ export async function getPosts(url) {
             data = await response.json();
             displayPosts(data);
         } else {
-            console.log('Error response:', response.status, await response.json());
+            alert('Failed to retrieve posts');
+        }
+    } catch (error) {
+        alert('Failed to retrieve posts');
+    }
+}
+
+getPosts(API_ALL_POSTS);
+ */
+
+export async function getPosts(url) {
+    try {
+        const token = localStorage.getItem('accessToken');
+
+        if (!token) {
+            return;
+        }
+
+        const getOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        };
+
+        const response = await fetch(API_ALL_POSTS, getOptions);
+
+        if (response.ok) {
+            data = await response.json();
+            displayPosts(data);
+        } else {
+            alert('Failed to retrieve posts');
         }
     } catch (error) {
         console.log(error);
@@ -40,11 +83,51 @@ export async function getPosts(url) {
 
 getPosts(API_ALL_POSTS);
 
+/**
+ * 
+ * @param {object} post - post object containing body, id, title, author etc
+ * @returns {HTMLElement} - returns HTML containing the post
+ * @example
+ * //Example
+ * function createPostHTML(post) {
+    const { body, media, created, id, author } = post;
+
+    const card = document.createElement("div");
+    card.classList.add("card", "mb-4");
+
+    const cardBody = document.createElement("div");
+    cardBody.classList.add("card-body");
+
+    const cardHeader = document.createElement("div");
+    cardHeader.classList.add("justify-content-between", "align-items-center", "d-flex");
+
+    const userNameElement = document.createElement("h4");
+    userNameElement.classList.add("card-title", "user-name");
+    userNameElement.innerText = `@${author.name}`;
+
+    cardHeader.append(userNameElement);
+    cardHeader.append(likeButton);
+
+    const cardText = document.createElement("p");
+    cardText.classList.add("card-text", "my-3");
+    cardText.innerText = body;
+
+    cardBody.append(cardHeader);
+    cardBody.append(cardText);
+    card.append(cardBody);
+    
+    return card;
+}
+ */
+
 function createPostHTML(post) {
     const { body, media, created, id, author } = post;
 
     const card = document.createElement("div");
     card.classList.add("card", "mb-4");
+    card.addEventListener("click", () => {
+        openPostModal(post);
+    });
 
     const cardBody = document.createElement("div");
     cardBody.classList.add("card-body");
@@ -74,28 +157,34 @@ function createPostHTML(post) {
     });
     postCreated.innerText = formattedDateTime;
 
-    cardHeader.appendChild(userNameElement);
-    cardHeader.appendChild(likeButton);
+    cardHeader.append(userNameElement);
+    cardHeader.append(likeButton);
 
-    dateContainer.appendChild(postCreated);
+    dateContainer.append(postCreated);
 
     const cardText = document.createElement("p");
     cardText.classList.add("card-text", "my-3");
     cardText.innerText = body;
 
-    cardBody.appendChild(cardHeader);
-    cardBody.appendChild(dateContainer);
-    cardBody.appendChild(cardText);
+    cardBody.append(cardHeader);
+    cardBody.append(dateContainer);
+    cardBody.append(cardText);
 
     const editButton = document.createElement("button");
-    editButton.classList.add("btn", "btn-outline-secondary", "btn-block", "my-2", "mr-2");
+    editButton.classList.add("btn", "btn-outline-secondary", "btn-block", "m-2");
     editButton.innerHTML = 'Edit';
-    editButton.addEventListener("click", () => openEditModal(post));
+    editButton.addEventListener("click", (event) => {
+        event.stopPropagation(); 
+        openEditModal(post);
+    });
 
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("btn", "btn-outline-danger", "btn-block", "m-2");
     deleteButton.innerHTML = 'Delete';
-    deleteButton.addEventListener("click", () => confirmDelete(post));
+    deleteButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        confirmDelete(post);
+    });
 
     if (media) {
         const imageContainer = document.createElement("div");
@@ -108,18 +197,35 @@ function createPostHTML(post) {
         imageElement.style.maxHeight = "100%";
         imageElement.src = media;
 
-        imageContainer.appendChild(imageElement);
-        cardBody.appendChild(imageContainer);
+        imageContainer.append(imageElement);
+        cardBody.append(imageContainer);
     }
 
-    cardBody.appendChild(editButton);
-    cardBody.appendChild(deleteButton);
-    card.appendChild(cardBody);
+    cardBody.append(editButton);
+    cardBody.append(deleteButton);
+    card.append(cardBody);
     
 
     return card;
 }
 
+/**
+ * 
+ * @param {object[]} postsToDisplay - array of objects
+ * @example
+ * // Example
+ * function displayPosts(postsToDisplay) {
+    const fragment = document.createDocumentFragment();
+
+    postsToDisplay.forEach((post) => {
+        const postHTML = createPostHTML(post);
+        fragment.append(postHTML);
+    });
+
+    postContainer.innerHTML = '';
+    postContainer.append(fragment);
+}
+ */
 
 function displayPosts(postsToDisplay) {
     const fragment = document.createDocumentFragment();
@@ -132,6 +238,10 @@ function displayPosts(postsToDisplay) {
     postContainer.innerHTML = '';
     postContainer.append(fragment);
 }
+
+/**
+ * Filters and sorts posts
+ */
 
 async function filterPosts() {
     const filterNewest = document.getElementById("newest");
@@ -156,13 +266,76 @@ filterPosts();
 
 searchButton.addEventListener("click", performSearch);
 
-function performSearch() {
+/**
+ * Performs a search on posts based on user input and displays the filtered results
+ */
+ function performSearch(event) {
+    event.preventDefault();
     const searchTerm = searchInput.value.trim().toLowerCase();
 
     if (searchTerm === "") {
-        displayPosts(data); 
+        displayPosts(data);
     } else {
-        const filteredPosts = data.filter(post => post.body.toLowerCase().includes(searchTerm));
+        const filteredPosts = data.filter(post => post.body && post.body.toLowerCase().includes(searchTerm));
         displayPosts(filteredPosts);
     }
 }
+
+searchButton.addEventListener("click", performSearch);
+
+/**
+ * 
+ * @param {object} post - Post object to display in modal
+ * @example 
+ * //Example
+ * function openPostModal(post) {
+    modalAuthor.textContent = `${post.author.name}`;
+    modalAuthor.classList.add("card-title", "user-name", "h4");
+    modalBody.textContent = post.body;
+    if (post.media) {
+        modalMedia.src = post.media;
+        modalMedia.style.display = "block";
+        modalMedia.style.maxHeight = "50%";
+        modalMedia.style.maxWidth = "50%";
+        modalMedia.classList.add("post-image", "img-fluid");
+        modalMedia.style.display = "block";
+        modalMedia.style.margin = "0 auto";
+    } else {
+        modalMedia.style.display = "none";
+    }
+    postModal.style.display = "block";
+}
+ */
+function openPostModal(post) {
+    modalAuthor.textContent = `${post.author.name}`;
+    modalAuthor.classList.add("card-title", "user-name", "h4");
+    modalBody.textContent = post.body;
+    if (post.media) {
+        modalMedia.src = post.media;
+        modalMedia.style.display = "block";
+        modalMedia.style.maxHeight = "50%";
+        modalMedia.style.maxWidth = "50%";
+        modalMedia.classList.add("post-image", "img-fluid");
+        modalMedia.style.display = "block";
+        modalMedia.style.margin = "0 auto";
+    } else {
+        modalMedia.style.display = "none";
+    }
+    postModal.style.display = "block";
+}
+
+/**
+ * Closes the modal when close button is clicked
+ */
+closeModalButton.addEventListener("click", () => {
+    postModal.style.display = "none";
+});
+
+/**
+ * Closes modal when clicking outside of modal
+ */
+window.addEventListener("click", (event) => {
+    if (event.target === postModal) {
+        postModal.style.display = "none";
+    }
+});

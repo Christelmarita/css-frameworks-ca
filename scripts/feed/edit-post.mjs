@@ -1,5 +1,10 @@
 import { API_CREATE_POST } from "../common/constant.mjs";
 
+/**
+ * Opens a modal for editing a post, pre-filling it with the provided post's data.
+ * 
+ * @param {object} post - The post object to edit, containing properties like title, body, and media
+ */
 function openEditModal(post) {
     const modalOverlay = document.getElementById('modal-overlay');
     const modal = document.getElementById("editModal");
@@ -28,7 +33,6 @@ function openEditModal(post) {
             const token = localStorage.getItem('accessToken');
 
             if (!token) {
-                console.log('Access token is missing. Redirect to the login page.');
                 return;
             }
 
@@ -55,18 +59,18 @@ function openEditModal(post) {
         }
     });
 
-    const closeModal = document.getElementById("closeModal");
+    const closeModal = modal.querySelector("#closeModal");
     closeModal.addEventListener("click", () => {
         modal.style.display = "none";
         modalOverlay.style.display = "none";
     });
-}
 
-window.addEventListener("click", (event) => {
-    const modal = document.getElementById("editModal");
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-});
+    modalOverlay.addEventListener("click", (event) => {
+        if (event.target === modalOverlay) {
+            modal.style.display = "none";
+            modalOverlay.style.display = "none";
+        }
+    });
+}
 
 export { openEditModal };

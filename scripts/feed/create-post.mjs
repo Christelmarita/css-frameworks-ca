@@ -4,6 +4,9 @@ import { getPosts } from "./fetch-posts.mjs";
 
 const postButton = document.querySelector("#post-button");
 
+/**
+ * Event listener for creating a new post when the "Post" button is clicked.
+ */
 postButton.addEventListener("click", async (e) => {
     e.preventDefault();
 
@@ -19,8 +22,14 @@ postButton.addEventListener("click", async (e) => {
     bodyInput.value = "";
 });
 
-
-async function createNewPost(title, body) {
+/**
+ * Creates a new post with the provided title and body content.
+ * 
+ * @param {string} title 
+ * @param {string} body 
+ * @example
+ * //Example
+ * async function createNewPost(title, body) {
     try {
         const token = localStorage.getItem('accessToken');
 
@@ -49,6 +58,40 @@ async function createNewPost(title, body) {
             getPosts(API_ALL_POSTS);
         } else {
             console.log('Error response:', response.status, await response.json());
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+ */
+
+async function createNewPost(title, body) {
+    try {
+        const token = localStorage.getItem('accessToken');
+
+        if (!token) {
+            return;
+        }
+
+        const postData = {
+            title: title,
+            body: body,
+        };
+
+        const postOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(postData),
+        };
+
+        const response = await fetch(API_CREATE_POST, postOptions);
+
+        if (response.ok) {
+            getPosts(API_ALL_POSTS);
+        } else {
         }
     } catch (error) {
         console.error(error);
